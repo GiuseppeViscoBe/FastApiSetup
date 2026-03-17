@@ -1,8 +1,8 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from datetime import datetime
 
-class Base(DeclarativeBase):
-    pass
+from db.base import Base
+
 
 class User(Base):
     __tablename__ = "auth_users"

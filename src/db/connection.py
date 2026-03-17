@@ -1,16 +1,31 @@
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
 from src.config import CONFIG
 from sqlalchemy import text
-from src.db.models import Base, User
+from models.user import User
 
-DB_URL = f"postgresql+asyncpg://{CONFIG.POSTGRES_USER}:{CONFIG.POSTGRES_PASSWORD}@db/{CONFIG.POSTGRES_DB}"
 
-engine = create_async_engine(
+#Docker version
+DB_URL = f"postgresql+psycopg://{CONFIG.POSTGRES_USER}:{CONFIG.POSTGRES_PASSWORD}@localhost/{CONFIG.POSTGRES_DB}"
+
+engine = create_engine(
     url=DB_URL,
     echo=True
 )
 
-async def init_db():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-        print("Database initialized and tables created if they did not exist.")
+SessionLocal = sessionmaker(
+    bind=engine,
+    autocommit=False,
+    autoflush=False,
+)
+
+Base = declarative_base()
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
